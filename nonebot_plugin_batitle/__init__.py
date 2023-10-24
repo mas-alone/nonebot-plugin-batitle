@@ -30,7 +30,7 @@ __plugin_meta__ = PluginMetadata(
     },
 )
 
-batitle = ("batitle ", "ba标题 ")
+batitle = ("ba ", "BA ", "Ba ")
 batitle_matcher = on_startswith(msg=batitle, block=True, priority=5)
 
 
@@ -40,10 +40,15 @@ async def _handler(
 ):
     try:
         keyword: str = key.replace(str_match, "")
-        if "｜" in keyword:
-            keyword = keyword.replace("｜", "|")
-        upper = keyword.split("|")[0].strip()
-        downer = keyword.split("|")[1].strip()
+        if "|" in keyword:
+            params = keyword.split("|")
+        else:
+            params = keyword.split()
+        if len(params) != 2 or not params[0].strip() or not params[1].strip():
+            await matcher.finish("请检查命令格式是否正确，应为 [ba 参数|参数2] 或 [ba 参数 参数2]")
+            return
+        upper = params[0].strip()
+        downer = params[1].strip()
         img_raw = draw_pic(front=upper, back=downer)
         img = BytesIO()
         img_raw.save(img, format="png")
@@ -54,6 +59,6 @@ async def _handler(
         await matcher.finish()
 
     except OSError:
-        await matcher.finish("生成失败……请检查字体文件设置是否正确")
+        await matcher.finish("生成失败，请重试")
     except IndexError:
-        await matcher.finish("生成失败……请检查命令格式是否正确")
+        await matcher.finish("请检查命令格式是否正确，应为 [ba 参数|参数2] 或 [ba 参数 参数2]")
